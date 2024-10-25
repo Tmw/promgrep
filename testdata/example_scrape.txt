@@ -1,0 +1,79 @@
+# HELP http_requests_total Total number of HTTP requests
+# TYPE http_requests_total counter
+http_requests_total{method="GET", status_code="200", endpoint="/api/v1/resource"} 100
+http_requests_total{method="GET", status_code="404", endpoint="/api/v1/resource"} 15
+http_requests_total{method="POST", status_code="200", endpoint="/api/v1/upload"} 200
+http_requests_total{method="POST", status_code="500", endpoint="/api/v1/upload"} 5
+http_requests_total{method="PUT", status_code="200", endpoint="/api/v1/resource"} 50
+http_requests_total{method="DELETE", status_code="403", endpoint="/api/v1/resource"} 10
+http_requests_total{method="GET", status_code="500", endpoint="/api/v1/resource"} 8
+http_requests_total{method="GET", status_code="302", endpoint="/api/v1/redirect"} 25
+http_requests_total{method="POST", status_code="201", endpoint="/api/v1/create"} 75
+http_requests_total{method="GET", status_code="401", endpoint="/api/v1/auth"} 12
+
+# HELP db_connection_errors Total number of database connection errors
+# TYPE db_connection_errors counter
+db_connection_errors{db_type="PostgreSQL", error_code="ECONNREFUSED"} 5
+db_connection_errors{db_type="MySQL", error_code="EACCESS"} 2
+db_connection_errors{db_type="MongoDB", error_code="ETIMEOUT"} 3
+db_connection_errors{db_type="PostgreSQL", error_code="EHOSTUNREACH"} 1
+db_connection_errors{db_type="MySQL", error_code="EHOSTDOWN"} 4
+db_connection_errors{db_type="SQLite", error_code="ELOCKED"} 0
+db_connection_errors{db_type="Cassandra", error_code="EINVALID"} 7
+
+# HELP cpu_usage_percentage CPU usage percentage per core
+# TYPE cpu_usage_percentage gauge
+cpu_usage_percentage{core="0", instance="server-1"} 75.5
+cpu_usage_percentage{core="1", instance="server-1"} 65.2
+cpu_usage_percentage{core="0", instance="server-2"} 80.1
+cpu_usage_percentage{core="1", instance="server-2"} 70.3
+cpu_usage_percentage{core="0", instance="server-3"} 60.4
+cpu_usage_percentage{core="1", instance="server-3"} 50.8
+cpu_usage_percentage{core="0", instance="server-4"} 85.0
+cpu_usage_percentage{core="1", instance="server-4"} 72.9
+
+# HELP api_response_time_seconds API response time in seconds
+# TYPE api_response_time_seconds histogram
+api_response_time_seconds{method="POST", endpoint="/api/v1/upload"} 0.256
+api_response_time_seconds{method="GET", endpoint="/api/v1/resource"} 0.124
+api_response_time_seconds{method="PUT", endpoint="/api/v1/resource"} 0.189
+api_response_time_seconds{method="DELETE", endpoint="/api/v1/resource"} 0.300
+api_response_time_seconds{method="GET", endpoint="/api/v1/auth"} 0.201
+api_response_time_seconds{method="POST", endpoint="/api/v1/create"} 0.150
+api_response_time_seconds{method="GET", endpoint="/api/v1/users"} 0.175
+
+# HELP service_latency_seconds Latency of services in seconds
+# TYPE service_latency_seconds gauge
+service_latency_seconds{service_name="auth-service", operation="login"} 0.123
+service_latency_seconds{service_name="payment-service", operation="checkout"} 0.210
+service_latency_seconds{service_name="user-service", operation="fetch"} 0.165
+service_latency_seconds{service_name="notification-service", operation="send"} 0.090
+service_latency_seconds{service_name="analytics-service", operation="report"} 0.250
+service_latency_seconds{service_name="email-service", operation="deliver"} 0.180
+service_latency_seconds{service_name="file-service", operation="upload"} 0.150
+
+# HELP user_sessions_active Number of active user sessions
+# TYPE user_sessions_active gauge
+user_sessions_active{user_role="admin"} 20
+user_sessions_active{user_role="editor"} 35
+user_sessions_active{user_role="viewer"} 100
+user_sessions_active{user_role="guest"} 50
+user_sessions_active{user_role="moderator"} 10
+user_sessions_active{user_role="superadmin"} 5
+
+# HELP notifications_sent_total Total number of notifications sent
+# TYPE notifications_sent_total counter
+notifications_sent_total{notification_type="email", status="delivered"} 1000
+notifications_sent_total{notification_type="sms", status="delivered"} 500
+notifications_sent_total{notification_type="push", status="delivered"} 300
+notifications_sent_total{notification_type="email", status="failed"} 50
+notifications_sent_total{notification_type="sms", status="failed"} 25
+notifications_sent_total{notification_type="push", status="failed"} 10
+
+# HELP backup_successful_total Total number of successful backups
+# TYPE backup_successful_total counter
+backup_successful_total{backup_type="full", storage_location="S3"} 15
+backup_successful_total{backup_type="incremental", storage_location="S3"} 10
+backup_successful_total{backup_type="full", storage_location="local"} 5
+backup_successful_total{backup_type="incremental", storage_location="local"} 3
+backup_successful_total{backup_type="differential", storage_location="S3"} 2
