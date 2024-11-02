@@ -13,9 +13,8 @@ import (
 
 func main() {
 	tokenizer := exposition.NewTokenizer(bufio.NewReader(os.Stdin))
-	parser := metricfamily.NewParser(tokenizer.Tokens())
+	entries, err := metricfamily.Parse(tokenizer.Tokens())
 
-	entries, err := parser.Parse()
 	if err != nil {
 		log.Fatal(err)
 	}

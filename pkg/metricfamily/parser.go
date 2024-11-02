@@ -8,19 +8,17 @@ import (
 	"github.com/tmw/promgrep/pkg/exposition"
 )
 
-type Parser struct {
+type parser struct {
 	tokenSeq iter.Seq[exposition.Token]
 	idx      int
 }
 
-func NewParser(tokensSeq iter.Seq[exposition.Token]) *Parser {
-	return &Parser{
-		tokenSeq: tokensSeq,
-		idx:      0,
-	}
+func Parse(tokenSeq iter.Seq[exposition.Token]) ([]MetricFamily, error) {
+	p := parser{tokenSeq: tokenSeq}
+	return p.parse()
 }
 
-func (p *Parser) Parse() ([]MetricFamily, error) {
+func (p *parser) parse() ([]MetricFamily, error) {
 	var (
 		metrics          = []MetricFamily{}
 		currentToken     *MetricFamily
