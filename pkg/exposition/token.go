@@ -15,6 +15,6 @@ const TYPE = "TYPE"
 const HELP = "HELP"
 
 type Token struct {
-	typ TokenType
-	str string
+	Typ TokenType
+	Str string
 }

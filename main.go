@@ -7,12 +7,13 @@ import (
 	"os"
 
 	"github.com/tmw/promgrep/pkg/exposition"
+	"github.com/tmw/promgrep/pkg/metricfamily"
 	"github.com/tmw/promgrep/pkg/query"
 )
 
 func main() {
 	tokenizer := exposition.NewTokenizer(bufio.NewReader(os.Stdin))
-	parser := exposition.NewParser(tokenizer.Tokens())
+	parser := metricfamily.NewParser(tokenizer.Tokens())
 
 	entries, err := parser.Parse()
 	if err != nil {
@@ -33,8 +34,8 @@ func main() {
 	}
 }
 
-func filter(entries []exposition.MetricFamily, q query.Query) []exposition.MetricFamily {
-	res := []exposition.MetricFamily{}
+func filter(entries []metricfamily.MetricFamily, q query.Query) []metricfamily.MetricFamily {
+	res := []metricfamily.MetricFamily{}
 
 	for _, entry := range entries {
 		if q.MetricName != "" {
@@ -53,7 +54,7 @@ func filter(entries []exposition.MetricFamily, q query.Query) []exposition.Metri
 	return res
 }
 
-func labelsMatch(entry exposition.MetricFamily, q query.Query) bool {
+func labelsMatch(entry metricfamily.MetricFamily, q query.Query) bool {
 	for k, v := range q.Labels {
 		if val, ok := entry.Labels[k]; !ok || val != v {
 			return false

@@ -31,8 +31,8 @@ func tokenizeText(t *tokenizer.Tokenizer[Token]) (*Token, tokenizer.StateFn[Toke
 func tokenizeMetric(t *tokenizer.Tokenizer[Token]) (*Token, tokenizer.StateFn[Token]) {
 	name := t.ReadUntil(tokenizer.IsOneOf('{', ' '))
 	tok := &Token{
-		typ: TokenTypeMetric,
-		str: string(name),
+		Typ: TokenTypeMetric,
+		Str: string(name),
 	}
 
 	if t.PeekMatch(tokenizer.IsEqual('{')) {
@@ -51,8 +51,8 @@ func tokenizeLabelName(t *tokenizer.Tokenizer[Token]) (*Token, tokenizer.StateFn
 	labelName := t.ReadUntil(tokenizer.IsEqual('='))
 
 	return &Token{
-		typ: TokenTypeLabelName,
-		str: string(labelName),
+		Typ: TokenTypeLabelName,
+		Str: string(labelName),
 	}, tokenizeLabelValue
 }
 
@@ -68,8 +68,8 @@ func tokenizeLabelValue(t *tokenizer.Tokenizer[Token]) (*Token, tokenizer.StateF
 	}
 
 	tok := &Token{
-		typ: TokenTypeLabelValue,
-		str: string(labelVal),
+		Typ: TokenTypeLabelValue,
+		Str: string(labelVal),
 	}
 
 	t.IgnoreWhile(tokenizer.IsEqual('"'))
@@ -90,8 +90,8 @@ func tokenizeNumber(t *tokenizer.Tokenizer[Token]) (*Token, tokenizer.StateFn[To
 	n := t.ReadUntil(tokenizer.IsEqual('\n'))
 
 	tok := &Token{
-		typ: TokenTypeNumber,
-		str: string(n),
+		Typ: TokenTypeNumber,
+		Str: string(n),
 	}
 
 	return tok, tokenizeText
@@ -106,8 +106,8 @@ func tokenizeComment(t *tokenizer.Tokenizer[Token]) (*Token, tokenizer.StateFn[T
 
 	if typStr == HELP {
 		tok := &Token{
-			typ: TokenTypeHelp,
-			str: string(value),
+			Typ: TokenTypeHelp,
+			Str: string(value),
 		}
 
 		return tok, tokenizeText
@@ -115,8 +115,8 @@ func tokenizeComment(t *tokenizer.Tokenizer[Token]) (*Token, tokenizer.StateFn[T
 
 	if typStr == TYPE {
 		tok := &Token{
-			typ: TokenTypeType,
-			str: string(value),
+			Typ: TokenTypeType,
+			Str: string(value),
 		}
 
 		return tok, tokenizeText

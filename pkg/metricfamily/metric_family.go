@@ -1,32 +1,17 @@
-package exposition
+package metricfamily
 
 import (
-	"cmp"
 	"fmt"
-	"iter"
-	"maps"
-	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/tmw/promgrep/pkg/maputil"
 )
 
 type MetricFamily struct {
 	Name   string
 	Val    float64
 	Labels map[string]string
-}
-
-func sorted[K cmp.Ordered, V any](m map[K]V) iter.Seq2[K, V] {
-	keys := slices.Collect(maps.Keys(m))
-	slices.Sort(keys)
-
-	return func(yield func(K, V) bool) {
-		for _, k := range keys {
-			if !yield(k, m[k]) {
-				break
-			}
-		}
-	}
 }
 
 func (m *MetricFamily) String() string {
@@ -38,7 +23,7 @@ func (m *MetricFamily) String() string {
 
 	if numLabels > 0 {
 		b.WriteRune('{')
-		for k, v := range sorted(m.Labels) {
+		for k, v := range maputil.Sorted(m.Labels) {
 			b.WriteString(fmt.Sprintf("%s=\"%s\"", k, v))
 
 			// not last label? separate with comma and space
