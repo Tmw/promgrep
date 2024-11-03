@@ -48,6 +48,7 @@ func tokenizeLabels(t *tokenizer.Tokenizer[Token]) (*Token, tokenizer.StateFn[To
 }
 
 func tokenizeLabelName(t *tokenizer.Tokenizer[Token]) (*Token, tokenizer.StateFn[Token]) {
+	t.IgnoreWhile(tokenizer.IsEqual(' '))
 	labelName := t.ReadUntil(tokenizer.IsOneOf('!', '='))
 	tok := &Token{
 		Typ: TokenTypeLabelName,
