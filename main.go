@@ -12,6 +12,10 @@ import (
 )
 
 func main() {
+	query.Do()
+}
+
+func main2() {
 	tokenizer := exposition.NewTokenizer(bufio.NewReader(os.Stdin))
 	entries, err := metricfamily.Parse(tokenizer.Tokens())
 
