@@ -23,9 +23,8 @@ type Token struct {
 	Str string
 }
 
-func Do() {
-	str := `metric_name{cpu="12", color!="yellow", cluster=~"some-regex-.*", cluster_region!~"eu-*"}`
-	// str := `{__name__=~"thing_.*"}`
+func Do(str string) {
+	fmt.Println("whote args:", str)
 	t := tokenizer.NewTokenizer(strings.NewReader(str), tokenizeText)
 	for tok := range t.Tokens() {
 		fmt.Println("tok", tok)

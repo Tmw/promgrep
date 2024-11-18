@@ -1,40 +1,36 @@
 package main
 
 import (
-	"bufio"
+	// "bufio"
+	// "fmt"
+	// "log"
 	"fmt"
-	"log"
 	"os"
+	"strings"
 
-	"github.com/tmw/promgrep/pkg/exposition"
+	// "github.com/tmw/promgrep/pkg/exposition"
 	"github.com/tmw/promgrep/pkg/metricfamily"
 	"github.com/tmw/promgrep/pkg/query"
 )
 
 func main() {
-	query.Do()
-}
+	// tokenizer := exposition.NewTokenizer(bufio.NewReader(os.Stdin))
+	// entries, err := metricfamily.Parse(tokenizer.Tokens())
 
-func main2() {
-	tokenizer := exposition.NewTokenizer(bufio.NewReader(os.Stdin))
-	entries, err := metricfamily.Parse(tokenizer.Tokens())
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	//
 	if len(os.Args) > 1 {
-		query, err := query.Parse(os.Args[1])
-		if err != nil {
-			log.Fatal(err)
-		}
+		allArgs := strings.Join(os.Args[1:], " ")
+		query.Do(allArgs)
 
-		entries = filter(entries, query)
+		// entries = filter(entries, query)
 	}
 
-	for _, ent := range entries {
-		fmt.Println(ent.String())
-	}
+	// for _, ent := range entries {
+	// 	fmt.Println(ent.String())
+	// }
 }
 
 func filter(entries []metricfamily.MetricFamily, q query.Query) []metricfamily.MetricFamily {
