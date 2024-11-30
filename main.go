@@ -2,7 +2,7 @@ package main
 
 import (
 	// "bufio"
-	// "fmt"
+	"fmt"
 	// "log"
 	// "fmt"
 	"os"
@@ -23,7 +23,7 @@ func main() {
 	//
 	if len(os.Args) > 1 {
 		allArgs := strings.Join(os.Args[1:], " ")
-		query.Do(allArgs)
+		fmt.Println(allArgs)
 
 		// entries = filter(entries, query)
 	}

@@ -1,9 +1,6 @@
 package query
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/tmw/promgrep/pkg/tokenizer"
 )
 
@@ -23,101 +20,79 @@ type Token struct {
 	Str string
 }
 
-func Do(str string) {
-	fmt.Println("whote args:", str)
-	t := tokenizer.NewTokenizer(strings.NewReader(str), tokenizeText)
-	for tok := range t.Tokens() {
-		fmt.Println("tok", tok)
-	}
-}
-
 func tokenizeText(t *tokenizer.Tokenizer[Token]) (*Token, tokenizer.StateFn[Token]) {
 	t.IgnoreWhile(tokenizer.IsOneOf(' '))
 
-	if t.PeekMatch(tokenizer.IsEqual('{')) {
-		return nil, tokenizeLabels
+	ident := t.ReadUntil(tokenizer.IsOneOf(' ', '=', '!', '\n'))
+	if t.PeekMatch(tokenizer.IsEqual(' ')) {
+		return &Token{
+			Typ: TokenTypeMetricName,
+			Str: string(ident),
+		}, tokenizeText
 	}
 
-	return nil, tokenizeMetricName
+	if t.PeekMatch(tokenizer.IsOneOf('=', '!')) {
+		tok := &Token{
+			Typ: TokenTypeLabelName,
+			Str: string(ident),
+		}
+
+		switch t.Peek() {
+		case '=':
+			return tok, tokenizeEq
+		case '!':
+			return tok, tokenizeExclam
+		}
+	}
+
+	return nil, nil
 }
 
-func tokenizeLabels(t *tokenizer.Tokenizer[Token]) (*Token, tokenizer.StateFn[Token]) {
-	t.IgnoreWhile(tokenizer.IsOneOf('{', ','))
-	return nil, tokenizeLabelName
-}
-
-func tokenizeLabelName(t *tokenizer.Tokenizer[Token]) (*Token, tokenizer.StateFn[Token]) {
-	t.IgnoreWhile(tokenizer.IsEqual(' '))
-	labelName := t.ReadUntil(tokenizer.IsOneOf('!', '='))
+func tokenizeEq(t *tokenizer.Tokenizer[Token]) (*Token, tokenizer.StateFn[Token]) {
+	t.Ignore()
 	tok := &Token{
-		Typ: TokenTypeLabelName,
-		Str: string(labelName),
+		Typ: TokenTypeEq,
+		Str: "=",
 	}
 
-	return tok, tokenizeOperator
+	if t.PeekMatch(tokenizer.IsEqual('~')) {
+		return tok, tokenizeTilde
+	}
+
+	return tok, tokenizeLabelValue
 }
 
-func tokenizeOperator(t *tokenizer.Tokenizer[Token]) (*Token, tokenizer.StateFn[Token]) {
-	switch t.Peek() {
-	case '!':
-		return &Token{
-			Typ: TokenTypeExclamation,
-			Str: string(t.NextRune()),
-		}, tokenizeOperator
+func tokenizeTilde(t *tokenizer.Tokenizer[Token]) (*Token, tokenizer.StateFn[Token]) {
+	t.Ignore()
+	return &Token{
+		Typ: TokenTypeTilde,
+		Str: "~",
+	}, tokenizeLabelValue
+}
 
-	case '=':
-		return &Token{
-			Typ: TokenTypeEq,
-			Str: string(t.NextRune()),
-		}, tokenizeOperator
+func tokenizeExclam(t *tokenizer.Tokenizer[Token]) (*Token, tokenizer.StateFn[Token]) {
+	t.Ignore()
 
-	case '~':
-		return &Token{
-			Typ: TokenTypeTilde,
-			Str: string(t.NextRune()),
-		}, tokenizeOperator
+	tok := &Token{
+		Typ: TokenTypeExclamation,
+		Str: "!",
+	}
 
-	case '"':
-		return nil, tokenizeLabelValue
+	if t.PeekMatch(tokenizer.IsEqual('~')) {
+		return tok, tokenizeTilde
+	}
+
+	if t.PeekMatch(tokenizer.IsEqual('=')) {
+		return tok, tokenizeEq
 	}
 
 	return nil, nil
 }
 
 func tokenizeLabelValue(t *tokenizer.Tokenizer[Token]) (*Token, tokenizer.StateFn[Token]) {
-	t.IgnoreUntil(tokenizer.IsEqual('"'))
-	t.Ignore()
-
-	var labelVal []rune
-
-	// if not empty string, read value
-	if !t.PeekMatch(tokenizer.IsEqual('"')) {
-		labelVal = t.ReadUntil(tokenizer.IsEqual('"'))
-		t.Ignore()
-	}
-
-	tok := &Token{
+	labelVal := t.ReadUntil(tokenizer.IsOneOf(' ', '\n'))
+	return &Token{
 		Typ: TokenTypeLabelValue,
 		Str: string(labelVal),
-	}
-
-	if t.PeekMatch(tokenizer.IsOneOf('}', '\n')) {
-		return tok, nil
-	}
-
-	return tok, tokenizeLabels
-}
-
-func tokenizeMetricName(t *tokenizer.Tokenizer[Token]) (*Token, tokenizer.StateFn[Token]) {
-	metricName := t.ReadUntil(tokenizer.IsOneOf('{', '\n'))
-	tok := &Token{
-		Typ: TokenTypeMetricName,
-		Str: string(metricName),
-	}
-
-	if t.PeekMatch(tokenizer.IsEqual('{')) {
-		return tok, tokenizeLabels
-	}
-
-	return tok, nil
+	}, tokenizeText
 }
