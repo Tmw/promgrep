@@ -9,12 +9,12 @@ import (
 	"github.com/tmw/promgrep/pkg/tokenizer"
 )
 
-type testcase struct {
-	input    string
-	expected []Token
-}
-
 func TestTokenizer(t *testing.T) {
+	type testcase struct {
+		input    string
+		expected []Token
+	}
+
 	cases := map[string]testcase{
 		"metric with single label/value pair": {
 			input: "metric label=value",
