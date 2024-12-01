@@ -112,6 +112,141 @@ func TestQuery_labels(t *testing.T) {
 				},
 			},
 		},
+
+		"single label (not eq)": {
+			input: []Token{
+				{Typ: TokenTypeMetricName, Str: "metric_name"},
+				{Typ: TokenTypeLabelName, Str: "label_a"},
+				{Typ: TokenTypeExclamation, Str: "!"},
+				{Typ: TokenTypeEq, Str: "="},
+				{Typ: TokenTypeLabelValue, Str: "value_a"},
+			},
+
+			expected: Query{
+				MetricName: Matcher{Op: OpEq, Val: "metric_name"},
+				Labels: map[string]Matcher{
+					"label_a": {Op: OpNotEq, Val: "value_a"},
+				},
+			},
+		},
+
+		"single label (match)": {
+			input: []Token{
+				{Typ: TokenTypeMetricName, Str: "metric_name"},
+				{Typ: TokenTypeLabelName, Str: "label_a"},
+				{Typ: TokenTypeEq, Str: "="},
+				{Typ: TokenTypeTilde, Str: "~"},
+				{Typ: TokenTypeLabelValue, Str: "value_a"},
+			},
+
+			expected: Query{
+				MetricName: Matcher{Op: OpEq, Val: "metric_name"},
+				Labels: map[string]Matcher{
+					"label_a": {Op: OpMatch, Val: "value_a"},
+				},
+			},
+		},
+
+		"single label (not match)": {
+			input: []Token{
+				{Typ: TokenTypeMetricName, Str: "metric_name"},
+				{Typ: TokenTypeLabelName, Str: "label_a"},
+				{Typ: TokenTypeExclamation, Str: "!"},
+				{Typ: TokenTypeTilde, Str: "~"},
+				{Typ: TokenTypeLabelValue, Str: "value_a"},
+			},
+
+			expected: Query{
+				MetricName: Matcher{Op: OpEq, Val: "metric_name"},
+				Labels: map[string]Matcher{
+					"label_a": {Op: OpNotMatch, Val: "value_a"},
+				},
+			},
+		},
+
+		"two labels (eq)": {
+			input: []Token{
+				{Typ: TokenTypeMetricName, Str: "metric_name"},
+				{Typ: TokenTypeLabelName, Str: "label_a"},
+				{Typ: TokenTypeEq, Str: "="},
+				{Typ: TokenTypeLabelValue, Str: "value_a"},
+				{Typ: TokenTypeLabelName, Str: "label_b"},
+				{Typ: TokenTypeEq, Str: "="},
+				{Typ: TokenTypeLabelValue, Str: "value_b"},
+			},
+
+			expected: Query{
+				MetricName: Matcher{Op: OpEq, Val: "metric_name"},
+				Labels: map[string]Matcher{
+					"label_a": {Op: OpEq, Val: "value_a"},
+					"label_b": {Op: OpEq, Val: "value_b"},
+				},
+			},
+		},
+
+		"two labels (eq and match)": {
+			input: []Token{
+				{Typ: TokenTypeMetricName, Str: "metric_name"},
+				{Typ: TokenTypeLabelName, Str: "label_a"},
+				{Typ: TokenTypeEq, Str: "="},
+				{Typ: TokenTypeLabelValue, Str: "value_a"},
+				{Typ: TokenTypeLabelName, Str: "label_b"},
+				{Typ: TokenTypeEq, Str: "="},
+				{Typ: TokenTypeTilde, Str: "~"},
+				{Typ: TokenTypeLabelValue, Str: "value_b"},
+			},
+
+			expected: Query{
+				MetricName: Matcher{Op: OpEq, Val: "metric_name"},
+				Labels: map[string]Matcher{
+					"label_a": {Op: OpEq, Val: "value_a"},
+					"label_b": {Op: OpMatch, Val: "value_b"},
+				},
+			},
+		},
+
+		"two labels (eq and not match)": {
+			input: []Token{
+				{Typ: TokenTypeMetricName, Str: "metric_name"},
+				{Typ: TokenTypeLabelName, Str: "label_a"},
+				{Typ: TokenTypeEq, Str: "="},
+				{Typ: TokenTypeLabelValue, Str: "value_a"},
+				{Typ: TokenTypeLabelName, Str: "label_b"},
+				{Typ: TokenTypeExclamation, Str: "!"},
+				{Typ: TokenTypeTilde, Str: "~"},
+				{Typ: TokenTypeLabelValue, Str: "value_b"},
+			},
+
+			expected: Query{
+				MetricName: Matcher{Op: OpEq, Val: "metric_name"},
+				Labels: map[string]Matcher{
+					"label_a": {Op: OpEq, Val: "value_a"},
+					"label_b": {Op: OpNotMatch, Val: "value_b"},
+				},
+			},
+		},
+
+		"two labels (not eq and not match)": {
+			input: []Token{
+				{Typ: TokenTypeMetricName, Str: "metric_name"},
+				{Typ: TokenTypeLabelName, Str: "label_a"},
+				{Typ: TokenTypeExclamation, Str: "!"},
+				{Typ: TokenTypeEq, Str: "="},
+				{Typ: TokenTypeLabelValue, Str: "value_a"},
+				{Typ: TokenTypeLabelName, Str: "label_b"},
+				{Typ: TokenTypeExclamation, Str: "!"},
+				{Typ: TokenTypeTilde, Str: "~"},
+				{Typ: TokenTypeLabelValue, Str: "value_b"},
+			},
+
+			expected: Query{
+				MetricName: Matcher{Op: OpEq, Val: "metric_name"},
+				Labels: map[string]Matcher{
+					"label_a": {Op: OpNotEq, Val: "value_a"},
+					"label_b": {Op: OpNotMatch, Val: "value_b"},
+				},
+			},
+		},
 	}
 
 	for name, tc := range cases {
