@@ -24,7 +24,11 @@ func tokenizeText(t *tokenizer.Tokenizer[Token]) (*Token, tokenizer.StateFn[Toke
 	t.IgnoreWhile(tokenizer.IsOneOf(' '))
 
 	ident := t.ReadUntil(tokenizer.IsOneOf(' ', '=', '!', '\n'))
-	if t.PeekMatch(tokenizer.IsEqual(' ')) {
+	if len(ident) == 0 {
+		return nil, nil
+	}
+
+	if t.PeekMatch(tokenizer.IsOneOf(' ', 0)) {
 		return &Token{
 			Typ: TokenTypeMetricName,
 			Str: string(ident),

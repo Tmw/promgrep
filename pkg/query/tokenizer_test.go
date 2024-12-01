@@ -137,6 +137,7 @@ func TestTokenizer(t *testing.T) {
 				{Typ: TokenTypeLabelValue, Str: "value_.+"},
 			},
 		},
+
 		"with metric name label and negating regex label/value pair": {
 			input: "__name__!~value_.+",
 			expected: []Token{
@@ -145,6 +146,18 @@ func TestTokenizer(t *testing.T) {
 				{Typ: TokenTypeTilde, Str: "~"},
 				{Typ: TokenTypeLabelValue, Str: "value_.+"},
 			},
+		},
+
+		"just metric name": {
+			input: "metric_name",
+			expected: []Token{
+				{Typ: TokenTypeMetricName, Str: "metric_name"},
+			},
+		},
+
+		"empty string": {
+			input:    "",
+			expected: nil,
 		},
 	}
 
