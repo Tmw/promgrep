@@ -1,46 +1,46 @@
 package main
 
 import (
-	// "bufio"
+	"bufio"
 	"fmt"
-	// "log"
-	// "fmt"
+	"log"
 	"os"
 	"strings"
 
-	// "github.com/tmw/promgrep/pkg/exposition"
+	"github.com/tmw/promgrep/pkg/exposition"
 	"github.com/tmw/promgrep/pkg/metricfamily"
 	"github.com/tmw/promgrep/pkg/query"
 )
 
 func main() {
-	// tokenizer := exposition.NewTokenizer(bufio.NewReader(os.Stdin))
-	// entries, err := metricfamily.Parse(tokenizer.Tokens())
+	tokenizer := exposition.NewTokenizer(bufio.NewReader(os.Stdin))
+	entries, err := metricfamily.Parse(tokenizer.Tokens())
 
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	//
-	if len(os.Args) > 1 {
-		allArgs := strings.Join(os.Args[1:], " ")
-		fmt.Println(allArgs)
-
-		// entries = filter(entries, query)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	// for _, ent := range entries {
-	// 	fmt.Println(ent.String())
-	// }
+	if len(os.Args) > 1 {
+		allArgs := strings.Join(os.Args[1:], " ")
+		q, err := query.Compile(allArgs)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		entries = filter(entries, q)
+	}
+
+	for _, ent := range entries {
+		fmt.Println(ent.String())
+	}
 }
 
 func filter(entries []metricfamily.MetricFamily, q query.Query) []metricfamily.MetricFamily {
 	res := []metricfamily.MetricFamily{}
 
 	for _, entry := range entries {
-		if q.MetricName != "" {
-			if q.MetricName != entry.Name {
-				continue
-			}
+		if !q.MetricName.Match(entry.Name) {
+			continue
 		}
 
 		if !labelsMatch(entry, q) {
@@ -55,7 +55,7 @@ func filter(entries []metricfamily.MetricFamily, q query.Query) []metricfamily.M
 
 func labelsMatch(entry metricfamily.MetricFamily, q query.Query) bool {
 	for k, v := range q.Labels {
-		if val, ok := entry.Labels[k]; !ok || val != v {
+		if val, ok := entry.Labels[k]; !ok || !v.Match(val) {
 			return false
 		}
 	}

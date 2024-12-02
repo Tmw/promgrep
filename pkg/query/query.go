@@ -23,6 +23,26 @@ type Matcher struct {
 	Val string
 }
 
+func (m *Matcher) Match(v string) bool {
+	switch m.Op {
+	case OpEq:
+		return v == m.Val
+
+	case OpNotEq:
+		return v != m.Val
+
+	case OpMatch:
+		// TODO: Needs regex parsing and validating
+		return false
+
+	case OpNotMatch:
+		// TODO: Needs regex parsing and validating
+		return false
+	}
+
+	return false
+}
+
 type Query struct {
 	MetricName Matcher
 	Labels     map[string]Matcher
