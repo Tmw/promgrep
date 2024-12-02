@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/tmw/promgrep/pkg/exposition"
 	"github.com/tmw/promgrep/pkg/metricfamily"
@@ -20,12 +21,13 @@ func main() {
 	}
 
 	if len(os.Args) > 1 {
-		query, err := query.Parse(os.Args[1])
+		allArgs := strings.Join(os.Args[1:], " ")
+		q, err := query.Compile(allArgs)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		entries = filter(entries, query)
+		entries = filter(entries, q)
 	}
 
 	for _, ent := range entries {
@@ -37,10 +39,8 @@ func filter(entries []metricfamily.MetricFamily, q query.Query) []metricfamily.M
 	res := []metricfamily.MetricFamily{}
 
 	for _, entry := range entries {
-		if q.MetricName != "" {
-			if q.MetricName != entry.Name {
-				continue
-			}
+		if !q.MetricName.Match(entry.Name) {
+			continue
 		}
 
 		if !labelsMatch(entry, q) {
@@ -55,7 +55,7 @@ func filter(entries []metricfamily.MetricFamily, q query.Query) []metricfamily.M
 
 func labelsMatch(entry metricfamily.MetricFamily, q query.Query) bool {
 	for k, v := range q.Labels {
-		if val, ok := entry.Labels[k]; !ok || val != v {
+		if val, ok := entry.Labels[k]; !ok || !v.Match(val) {
 			return false
 		}
 	}
