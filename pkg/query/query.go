@@ -52,10 +52,11 @@ func parse(t iter.Seq[Token]) (Query, error) {
 
 		if t.Typ == TokenTypeLabelName && t.Str == "__name__" {
 			idx++
-			op, numTokens := matchOperator(tokens[idx:])
-			if numTokens == 0 {
+			op, numTokens, err := matchOperator(tokens[idx:])
+			if err != nil {
 				return q, fmt.Errorf("expected operator after __name__")
 			}
+
 			idx += numTokens
 
 			valToken := tokens[idx]
@@ -70,11 +71,15 @@ func parse(t iter.Seq[Token]) (Query, error) {
 
 		if t.Typ == TokenTypeLabelName {
 			idx++
-			op, numTokens := matchOperator(tokens[idx:])
-			if numTokens == 0 {
+			op, numTokens, err := matchOperator(tokens[idx:])
+			if err != nil {
 				return q, fmt.Errorf("expected operator after %s", t.Str)
 			}
+
 			idx += numTokens
+			if idx > len(tokens)-1 {
+				return q, fmt.Errorf("expected label value after operator %s", op)
+			}
 
 			valToken := tokens[idx]
 			if valToken.Typ != TokenTypeLabelValue {
@@ -86,31 +91,36 @@ func parse(t iter.Seq[Token]) (Query, error) {
 			continue
 		}
 
-		idx++
+		return q, fmt.Errorf("unexpected token %s", t.Typ)
 	}
 
 	return q, nil
 }
 
 // returns the operation it matched and the number of tokens it used
-func matchOperator(tokens []Token) (Op, int) {
-	if len(tokens) < 2 {
-		panic("unable to parse operator; not enough tokens in buffer")
+func matchOperator(tokens []Token) (Op, int, error) {
+	matches := func(t []Token, idx int, typ TokenType) bool {
+		if idx > len(t)-1 {
+			return false
+		}
+
+		tok := t[idx]
+		return tok.Typ == typ
 	}
 
 	switch {
-	case tokens[0].Typ == TokenTypeEq && tokens[1].Typ == TokenTypeTilde:
-		return OpMatch, 2
+	case matches(tokens, 0, TokenTypeEq) && matches(tokens, 1, TokenTypeTilde):
+		return OpMatch, 2, nil
 
-	case tokens[0].Typ == TokenTypeExclamation && tokens[1].Typ == TokenTypeTilde:
-		return OpNotMatch, 2
+	case matches(tokens, 0, TokenTypeExclamation) && matches(tokens, 1, TokenTypeTilde):
+		return OpNotMatch, 2, nil
 
-	case tokens[0].Typ == TokenTypeExclamation && tokens[1].Typ == TokenTypeEq:
-		return OpNotEq, 2
+	case matches(tokens, 0, TokenTypeExclamation) && matches(tokens, 1, TokenTypeEq):
+		return OpNotEq, 2, nil
 
-	case tokens[0].Typ == TokenTypeEq: // why isn't it triggering on this?..
-		return OpEq, 1
+	case matches(tokens, 0, TokenTypeEq):
+		return OpEq, 1, nil
 	}
 
-	return OpEq, 0
+	return OpEq, 0, fmt.Errorf("unable to match operator")
 }

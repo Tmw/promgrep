@@ -257,3 +257,69 @@ func TestQuery_labels(t *testing.T) {
 		})
 	}
 }
+
+func TestQuery_unhappy_path(t *testing.T) {
+	type testcase struct {
+		input    []Token
+		expected string
+	}
+
+	cases := map[string]testcase{
+		"starts with operator (eq)": {
+			input: []Token{
+				{Typ: TokenTypeEq, Str: "="},
+			},
+
+			expected: "unexpected token eq",
+		},
+
+		"starts with operator (match)": {
+			input: []Token{
+				{Typ: TokenTypeTilde, Str: "~"},
+			},
+
+			expected: "unexpected token tilde",
+		},
+
+		"missing operator after __name__": {
+			input: []Token{
+				{Typ: TokenTypeLabelName, Str: "__name__"},
+			},
+
+			expected: "expected operator after __name__",
+		},
+
+		"missing operator after label": {
+			input: []Token{
+				{Typ: TokenTypeLabelName, Str: "label_a"},
+			},
+
+			expected: "expected operator after label_a",
+		},
+
+		"missing label value after operator": {
+			input: []Token{
+				{Typ: TokenTypeLabelName, Str: "label_a"},
+				{Typ: TokenTypeEq, Str: "="},
+			},
+
+			expected: "expected label value after operator =",
+		},
+
+		"wrong operator combination": {
+			input: []Token{
+				{Typ: TokenTypeEq, Str: "="},
+				{Typ: TokenTypeEq, Str: "="},
+			},
+
+			expected: "unexpected token eq",
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			_, err := parse(slices.Values(tc.input))
+			assert.ErrorContains(t, err, tc.expected)
+		})
+	}
+}
