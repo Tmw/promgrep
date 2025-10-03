@@ -107,7 +107,7 @@ func TestTokenizer(t *testing.T) {
 		},
 
 		"with metric and regex label/value pair": {
-			input: "metric_name label_a=~value_.+",
+			input: "metric_name label_a=/value_.+/",
 			expected: []Token{
 				{Typ: TokenTypeMetricName, Str: "metric_name"},
 				{Typ: TokenTypeLabelName, Str: "label_a"},

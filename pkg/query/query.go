@@ -3,6 +3,7 @@ package query
 import (
 	"fmt"
 	"iter"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -32,12 +33,20 @@ func (m *Matcher) Match(v string) bool {
 		return v != m.Val
 
 	case OpMatch:
-		// TODO: Needs regex parsing and validating
-		return false
+		re, err := regexp.Compile(m.Val)
+		if err != nil {
+			panic(fmt.Errorf("error compiling regex: %w", err))
+		}
+
+		return re.Match([]byte(v))
 
 	case OpNotMatch:
-		// TODO: Needs regex parsing and validating
-		return false
+		re, err := regexp.Compile(m.Val)
+		if err != nil {
+			panic(fmt.Errorf("error compiling regex: %w", err))
+		}
+
+		return !re.Match([]byte(v))
 	}
 
 	return false
